@@ -1,0 +1,45 @@
+ekf_filter_node:
+  ros__parameters:
+
+    use_sim_time: true
+
+    frequency: 50.0
+    sensor_timeout: 0.1
+
+    two_d_mode: true
+    publish_tf: true
+
+    # Frames
+    odom_frame: odom
+    base_link_frame: base_footprint
+    world_frame: odom
+
+    # -------------------------
+    # Wheel odometry (mecanum)
+    # -------------------------
+    odom0: /mobile_base_controller/odometry
+
+    odom0_config: [true,  true,  false,   # x, y, z
+                   false, false, true,    # roll, pitch , yaw
+                   true,  true,  false,   # vx, vy, vz
+                   false, false, true,    # v_roll, v_pitch, v_yaw
+                   false, false, false]   # ax, ay, az
+
+    odom0_differential: false
+    odom0_relative: false
+
+    # -------------------------
+    # IMU
+    # -------------------------
+    imu0: /base_imu
+
+    imu0_config: [false, false, false,
+                  false, false, true,
+                  false, false, false,
+                  false, false, true,
+                  false, false, false]
+
+    imu0_differential: false
+    imu0_relative: false
+
+    imu0_remove_gravitational_acceleration: true

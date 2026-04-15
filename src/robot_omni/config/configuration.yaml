@@ -1,0 +1,46 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    mobile_base_controller:
+      type: mecanum_drive_controller/MecanumDriveController
+
+    # imu_sensor_broadcaster:
+    #   type: imu_sensor_broadcaster/IMUSensorBroadcaster
+
+# imu_sensor_broadcaster:
+#   ros__parameters:
+#     sensor_name: "base_imu_sensor" 
+#     frame_id: "base_imu_link"
+
+mobile_base_controller:
+  ros__parameters:
+    # 1. Command Joint Names (Exact matches from your URDF)
+    front_left_wheel_command_joint_name:  "wheel_front_left_joint"
+    front_right_wheel_command_joint_name: "wheel_front_right_joint"
+    rear_left_wheel_command_joint_name:   "wheel_rear_left_joint"
+    rear_right_wheel_command_joint_name:  "wheel_rear_right_joint"
+
+    # 2. Kinematics Group
+    kinematics:
+      wheels_radius: 0.0762 # From URDF 
+      # Calculation: (Separation_X / 2) + (Separation_Y / 2)
+      # From URDF: (0.488 / 2) + (0.44635 / 2) = 0.244 + 0.223175
+      sum_of_robot_center_projection_on_X_Y_axis: 0.25 
+      
+      base_frame_offset: { x: 0.0, y: 0.0, theta: 0.0 }
+  
+    # 3. Frames and Odometry
+    base_frame_id: base_footprint
+    odom_frame_id: odom
+    enable_odom_tf: true 
+    
+    # 4. Limits and Timeouts
+    reference_timeout: 2.0
+    
+    # Covariance (Updated to match documentation array format)
+    pose_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]
+    twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]

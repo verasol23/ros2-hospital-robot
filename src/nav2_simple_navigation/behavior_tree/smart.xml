@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <Fallback name="NavigateRecovery">
+      <Sequence name="NavigateWithReplanning">
+        <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+        <FollowPath path="{path}" controller_id="FollowPath"/>
+      </Sequence>
+
+      <Sequence name="RecoveryActions">
+        <BackUp backup_dist="0.15" backup_speed="0.05"/>
+        <Spin spin_dist="1.57"/>
+        <Wait wait_duration="2.0"/>
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+</root>

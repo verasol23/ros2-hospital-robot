@@ -1,0 +1,34 @@
+# ROS 2 / colcon
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# Ubuntu / temp
+*.swp
+*.swo
+*~
+
+# Gazebo / generated
+*.db
+*.log
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# ROS bag / large outputs (nếu có)
+*.bag
+*.db3
+
+# Environment
+.venv/
+env/
