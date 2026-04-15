@@ -51,6 +51,7 @@ def generate_launch_description():
             executable='bt_navigator',
             name='bt_navigator',
             output='screen',
+            #parameters=[nav2_config]
             parameters=[nav2_config, {'default_nav_to_pose_bt_xml': bt_xml_file}]
         ),
 

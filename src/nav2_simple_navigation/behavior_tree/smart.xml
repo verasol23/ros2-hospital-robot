@@ -1,17 +1,53 @@
 <?xml version="1.0"?>
 <root BTCPP_format="4">
   <BehaviorTree ID="MainTree">
-    <Fallback name="NavigateRecovery">
-      <Sequence name="NavigateWithReplanning">
-        <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
-        <FollowPath path="{path}" controller_id="FollowPath"/>
+
+    <RecoveryNode number_of_retries="6" name="NavigateRecoveryRoot">
+
+      <!-- ===== MAIN NAVIGATION ===== -->
+      <PipelineSequence name="DynamicNavigation">
+
+        <!-- Replan liên tục mỗi 1s -->
+        <RateController hz="1.0">
+          <RecoveryNode number_of_retries="1" name="ComputePathRecovery">
+            <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+            <ClearEntireCostmap name="ClearGlobalCostmap-Context"
+                                service_name="global_costmap/clear_entirely_global_costmap"/>
+          </RecoveryNode>
+        </RateController>
+
+        <!-- Follow path với recovery mềm trước -->
+        <RecoveryNode number_of_retries="1" name="FollowPathRecovery">
+          <FollowPath path="{path}" controller_id="FollowPath"/>
+
+          <Sequence name="SoftRecovery">
+            <Wait wait_duration="3.0"/>
+            <ClearEntireCostmap name="ClearLocalCostmap-AfterWait"
+                                service_name="local_costmap/clear_entirely_local_costmap"/>
+          </Sequence>
+        </RecoveryNode>
+
+      </PipelineSequence>
+
+      <!-- ===== HARDER RECOVERY ===== -->
+      <Sequence name="ControlledPhysicalRecovery">
+
+        <!-- Replan lại sau khi chờ/collision -->
+        <ClearEntireCostmap name="ClearLocalCostmap-BeforePhysical"
+                            service_name="local_costmap/clear_entirely_local_costmap"/>
+
+        <!-- Lùi rất ngắn -->
+        <BackUp backup_dist="0.12" backup_speed="0.05"/>
+
+        <!-- Xoay rất nhỏ, không quay gắt -->
+        <Spin spin_dist="0.2"/>
+
+        <!-- Chờ thêm một nhịp để môi trường ổn định -->
+        <Wait wait_duration="2.0"/>
+
       </Sequence>
 
-      <Sequence name="RecoveryActions">
-        <BackUp backup_dist="0.15" backup_speed="0.05"/>
-        <Spin spin_dist="1.57"/>
-        <Wait wait_duration="2.0"/>
-      </Sequence>
-    </Fallback>
+    </RecoveryNode>
+
   </BehaviorTree>
 </root>

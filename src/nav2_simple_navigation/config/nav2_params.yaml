@@ -7,7 +7,7 @@ amcl:
     alpha4: 0.2
     alpha5: 0.2
 
-    base_frame_id: "base_link"
+    base_frame_id: "base_footprint"
     global_frame_id: "map"
     odom_frame_id: "odom"
 
@@ -36,8 +36,13 @@ amcl:
     recovery_alpha_slow: 0.0
     recovery_alpha_fast: 0.0
 
-    set_initial_pose: false
-    always_reset_initial_pose: false
+    set_initial_pose: true
+    always_reset_initial_pose: true
+    initial_pose:
+      x: 2.5
+      y: 0.1
+      z: 0.0
+      yaw: -1.5708
 
     first_map_only: false
     save_pose_rate: 0.5
@@ -49,7 +54,7 @@ bt_navigator:
   ros__parameters:
     use_sim_time: true
     global_frame: map          
-    robot_base_frame: base_link
+    robot_base_frame: base_footprint
     odom_topic: /odometry/filtered
     #default_nav_to_pose_bt_xml: "/home/alberthtran/ros2_project/src/nav2_simple_navigation/behavior_tree/drive_in_circle.xml"
    
@@ -66,7 +71,7 @@ planner_server:
     GridBased:
       plugin: "nav2_navfn_planner::NavfnPlanner"
       tolerance: 0.5
-      use_astar: false
+      use_astar: true
 
 # -------------------------
 # Controller Server (MPPI)
@@ -93,17 +98,17 @@ controller_server:
 
     FollowPath:
       plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
-      desired_linear_velocity: 0.5
-      lookahead_dist: 0.6       # Crucial: smaller = tighter turns, larger = smoother
-      min_lookahead_dist: 0.3
-      max_lookahead_dist: 0.9
+      desired_linear_velocity: 0.2
+      lookahead_dist: 0.55       # Crucial: smaller = tighter turns, larger = smoother
+      min_lookahead_dist: 0.45
+      max_lookahead_dist: 0.6
       lookahead_time: 1.5
       rotate_to_heading_angular_vel: 1.0
       transform_tolerance: 0.1
       use_velocity_scaled_lookahead_dist: true
       min_approach_linear_velocity: 0.05
       approach_velocity_scaling_dist: 0.6
-      use_collision_detection: false # Set to false since you're in an empty space
+      use_collision_detection: true # Set to false since you're in an empty space
       use_regulated_linear_velocity_scaling: true
       regulated_linear_scaling_min_radius: 0.9
       regulated_linear_scaling_min_speed: 0.1
@@ -116,19 +121,32 @@ global_costmap:
     ros__parameters:
       use_sim_time: true
       global_frame: map
-      robot_base_frame: base_link
+      robot_base_frame: base_footprint
       resolution: 0.05
       track_unknown_space: true
+      footprint: "[[0.33, 0.23], [0.33, -0.23], [-0.33, -0.23], [-0.33, 0.23]]"
 
-      plugins: ["static_layer", "inflation_layer"]
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
 
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: true
 
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        observation_sources: scan
+        scan:
+          topic: /scan_front_raw
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 10.0
+          obstacle_max_range: 8.0
+
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        inflation_radius: 0.5
+        inflation_radius: 0.25
 # -------------------------
 # Local Costmap
 # -------------------------
@@ -137,11 +155,12 @@ local_costmap:
     ros__parameters:
       use_sim_time: true
       global_frame: odom
-      robot_base_frame: base_link
+      robot_base_frame: base_footprint
       rolling_window: true
-      width: 3
-      height: 3
+      width: 5
+      height: 5
       resolution: 0.05
+      footprint: "[[0.33, 0.23], [0.33, -0.23], [-0.33, -0.23], [-0.33, 0.23]]"
 
       plugins: ["obstacle_layer", "inflation_layer"]
 
@@ -178,7 +197,7 @@ behavior_server:
     wait:
       plugin: "nav2_behaviors::Wait"
     global_frame: map
-    robot_base_frame: base_link
+    robot_base_frame: base_footprint
     transform_timeout: 0.1
     use_realtime_priority: false
     enable_stamped_cmd_vel: true
