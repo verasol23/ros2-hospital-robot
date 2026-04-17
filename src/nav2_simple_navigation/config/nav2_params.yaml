@@ -115,8 +115,8 @@ controller_server:
     general_goal_checker:
       stateful: True # khi đã vào goal region, goal checker xử lý ổn định hơn
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.18
-      yaw_goal_tolerance: 0.4
+      xy_goal_tolerance: 0.23
+      yaw_goal_tolerance: 0.45
     #nếu robot lệch hướng nhiều thì xoay trước, rồi mới giao cho MPPI.
     FollowPath:
       plugin: "nav2_rotation_shim_controller::RotationShimController"
@@ -142,7 +142,7 @@ controller_server:
       model_dt: 0.05
       batch_size: 1100
       iteration_count: 1
-      temperature: 0.20
+      temperature: 0.17
       gamma: 0.015
 
       motion_model: "Omni"
@@ -185,13 +185,13 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 5.0
-        threshold_to_consider: 0.6
+        threshold_to_consider: 0.8
 
       GoalAngleCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 3.5
-        threshold_to_consider: 0.5
+        cost_weight: 5.0
+        threshold_to_consider: 0.8
 
       PathAlignCritic:
         enabled: true
@@ -268,7 +268,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         inflation_radius: 0.85 # Tăng inflation_radius: path né tường mạnh hơn, Giảm: path dám đi sát hơn.
-        cost_scaling_factor: 10.0 #Tăng cost_scaling_factor: cost rơi nhanh hơn theo khoảng cách, Giảm: vùng sợ obstacle lan xa hơn.
+        cost_scaling_factor: 12.0 #Tăng cost_scaling_factor: cost rơi nhanh hơn theo khoảng cách, Giảm: vùng sợ obstacle lan xa hơn.
         
       keepout_filter: #cấm robot đi vào vùng keepout trên map mask.
         plugin: "nav2_costmap_2d::KeepoutFilter"
@@ -323,7 +323,7 @@ local_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         inflation_radius: 0.42
-        cost_scaling_factor: 12.0
+        cost_scaling_factor: 25.0
 # -------------------------
 # Recovery Server
 # -------------------------
