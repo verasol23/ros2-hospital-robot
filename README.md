@@ -1,5 +1,4 @@
 # ros2-hospital-robot
-# ros2-hospital-robot
 
 A ROS 2 project for simulating a hospital delivery robot in Gazebo. The robot can navigate autonomously with Nav2 and receive room goals from a simple GUI.
 
