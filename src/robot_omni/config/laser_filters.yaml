@@ -5,8 +5,8 @@ scan_front_filter:
       type: laser_filters/LaserScanSpeckleFilter
       params:
         filter_type: 0
-        max_range: 4.0
-        max_range_difference: 0.2
+        max_range: 6.0
+        max_range_difference: 0.25
         filter_window: 3
 
 scan_rear_filter:
@@ -16,6 +16,6 @@ scan_rear_filter:
       type: laser_filters/LaserScanSpeckleFilter
       params:
         filter_type: 0
-        max_range: 4.0
-        max_range_difference: 0.2
+        max_range: 6.0
+        max_range_difference: 0.25
         filter_window: 3

@@ -26,7 +26,7 @@ def generate_launch_description():
             executable='map_server',
             name='map_server',
             output='screen',
-            parameters=[nav2_config, {'yaml_filename': map_yaml_file}]
+            parameters=[nav2_config, {'yaml_filename': map_yaml_file, 'use_sim_time': True}]
         ),
 
         Node(
@@ -34,8 +34,7 @@ def generate_launch_description():
             executable='amcl',
             name='amcl',
             output='screen',
-            parameters=[nav2_config],
-            remappings=[('/scan', '/scan_front_raw')]
+            parameters=[nav2_config]
         ),
 
         Node(

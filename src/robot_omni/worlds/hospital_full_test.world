@@ -193,54 +193,13 @@
         <pose>0.054597 4.05849 0 0 -0 3.12413</pose>
       </include>
     </model>
-    <!-- <model name="PatientWheelChair_1">
+    <model name="PatientWheelChair_1">
       <include>
         <uri>model://PatientWheelChair</uri>
         <static>true</static>
         <pose>-5.46091 1.23577 0 0 0 -1.54828</pose>
       </include>
-    </model> -->
-
-    <model name="PatientWheelChair_1">
-      <pose>-5.46091 1.23577 0 0 0 -1.54828</pose>
-      <static>false</static>
-      
-      <include>
-        <uri>model://PatientWheelChair</uri>
-        <static>false</static>
-      </include>
-
-      <plugin
-        filename="gz-sim-velocity-control-system"
-        name="gz::sim::systems::VelocityControl">
-        <link_name>link</link_name> 
-      </plugin>
     </model>
-
-        <!-- <model name="Scrubs_6">
-      <include>
-        <uri>model://Scrubs</uri>
-        <static>true</static>
-        <pose>-1.29468 -20.4093 0 0 0 -1.51066</pose>
-      </include>
-    </model> -->
-
-    <model name="Scrubs_6">
-      <pose> 5.26468 -22.4093 0 0 0 1.51066</pose>
-      <static>false</static>
-      
-      <include>
-        <uri>model://Scrubs</uri>
-        <static>false</static>
-      </include>
-
-      <plugin
-        filename="gz-sim-velocity-control-system"
-        name="gz::sim::systems::VelocityControl">
-        <link_name>link</link_name> 
-      </plugin>
-    </model>
-    
     <model name="Scrubs_3">
       <include>
         <uri>model://Scrubs</uri>
@@ -1088,8 +1047,13 @@
         <pose>-5.98588 6.41261 0 0 -0 1.58808</pose>
       </include>
     </model>
-
-
+    <model name="Scrubs_6">
+      <include>
+        <uri>model://Scrubs</uri>
+        <static>true</static>
+        <pose>-1.29468 -20.4093 0 0 0 -1.51066</pose>
+      </include>
+    </model>
     <model name="aws_robomaker_hospital_curtain_open_01_1">
       <include>
         <uri>model://aws_robomaker_hospital_curtain_open_01</uri>
