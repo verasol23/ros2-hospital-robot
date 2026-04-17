@@ -9,9 +9,36 @@ def generate_launch_description():
     robot_pkg = get_package_share_directory('robot_omni')
 
     nav2_config = os.path.join(nav_pkg, 'config', 'nav2_params.yaml')
-    bt_xml_file = os.path.join(nav_pkg, 'behavior_tree', 'smart.xml')
+    bt_xml_file = os.path.join(nav_pkg, 'behavior_tree', 'test.xml')
+    filter_config = os.path.join(robot_pkg, 'config', 'laser_filters.yaml')
+    keepout_mask_yaml = os.path.join(nav_pkg, 'maps', 'my_map_keepout_mask.yaml')
 
     return LaunchDescription([
+
+        Node(
+            package='laser_filters',
+            executable='scan_to_scan_filter_chain',
+            name='scan_front_filter',
+            output='screen',
+            parameters=[filter_config, {'use_sim_time': True}],
+            remappings=[
+                ('scan', '/scan_front_raw'),
+                ('scan_filtered', '/scan_front_filtered')
+            ]
+        ),
+
+        Node(
+            package='laser_filters',
+            executable='scan_to_scan_filter_chain',
+            name='scan_rear_filter',
+            output='screen',
+            parameters=[filter_config, {'use_sim_time': True}],
+            remappings=[
+                ('scan', '/scan_rear_raw'),
+                ('scan_filtered', '/scan_rear_filtered')
+            ]
+        ),
+
         Node(
             package='nav2_planner',
             executable='planner_server',
@@ -63,6 +90,7 @@ def generate_launch_description():
             parameters=[nav2_config]
         ),
 
+
         Node(
             package='nav2_velocity_smoother',
             executable='velocity_smoother',
@@ -71,8 +99,16 @@ def generate_launch_description():
             parameters=[nav2_config],
             remappings=[
                 ('/cmd_vel', '/cmd_vel_nav_raw'),
-                ('/cmd_vel_smoothed', '/mobile_base_controller/reference')
+                ('/cmd_vel_smoothed', '/cmd_vel_nav_smooth')
             ]
+        ),
+
+        Node(
+            package='nav2_collision_monitor',
+            executable='collision_monitor',
+            name='collision_monitor',
+            output='screen',
+            parameters=[nav2_config]
         ),
         # Node(
         #     package='nav2_simple_navigation',
@@ -85,6 +121,48 @@ def generate_launch_description():
         #         'frame_id': 'base_link'
         #     }]
         # ),
+        Node(
+            package='nav2_map_server',
+            executable='map_server',
+            name='keepout_filter_mask_server',
+            output='screen',
+            parameters=[{
+                'use_sim_time': True,
+                'yaml_filename': keepout_mask_yaml,
+                'topic_name': '/keepout_filter_mask',
+                'frame_id': 'map'
+            }]
+        ),
+
+        Node(
+            package='nav2_map_server',
+            executable='costmap_filter_info_server',
+            name='costmap_filter_info_server',
+            output='screen',
+            parameters=[{
+                'use_sim_time': True,
+                'filter_info_topic': '/costmap_filter_info',
+                'type': 0,
+                'mask_topic': '/keepout_filter_mask',
+                'base': 0.0,
+                'multiplier': 1.0
+            }]
+        ),
+
+        Node(
+            package='nav2_lifecycle_manager',
+            executable='lifecycle_manager',
+            name='lifecycle_manager_keepout_zone',
+            output='screen',
+            parameters=[{
+                'use_sim_time': True,
+                'autostart': True,
+                'node_names': [
+                    'keepout_filter_mask_server',
+                    'costmap_filter_info_server'
+                ]
+            }]
+        ),    
 
         Node(
             package='nav2_lifecycle_manager',
@@ -101,7 +179,8 @@ def generate_launch_description():
                     'behavior_server',
                     'bt_navigator',
                     'waypoint_follower',
-                    'velocity_smoother'
+                    'velocity_smoother',
+                    'collision_monitor'
                 ]
             }]
         ),

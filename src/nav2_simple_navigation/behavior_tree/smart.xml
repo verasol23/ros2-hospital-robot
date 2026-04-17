@@ -4,48 +4,62 @@
 
     <RecoveryNode number_of_retries="6" name="NavigateRecoveryRoot">
 
-      <!-- ===== MAIN NAVIGATION ===== -->
       <PipelineSequence name="DynamicNavigation">
 
-        <!-- Replan liên tục mỗi 1s -->
-        <RateController hz="1.0">
+        <RateController hz="0.65">
           <RecoveryNode number_of_retries="1" name="ComputePathRecovery">
-            <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
-            <ClearEntireCostmap name="ClearGlobalCostmap-Context"
+            <Sequence name="ComputeAndSmoothPath">
+              <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+              <SmoothPath unsmoothed_path="{path}" smoothed_path="{path}"/>
+            </Sequence>
+            <ClearEntireCostmap name="ClearGlobalCostmap-OnPlanFail"
                                 service_name="global_costmap/clear_entirely_global_costmap"/>
           </RecoveryNode>
         </RateController>
 
-        <!-- Follow path với recovery mềm trước -->
-        <RecoveryNode number_of_retries="1" name="FollowPathRecovery">
+        <RecoveryNode number_of_retries="2" name="FollowPathRecovery">
           <FollowPath path="{path}" controller_id="FollowPath"/>
 
           <Sequence name="SoftRecovery">
-            <Wait wait_duration="3.0"/>
-            <ClearEntireCostmap name="ClearLocalCostmap-AfterWait"
+            <ClearEntireCostmap name="ClearLocalCostmap-FollowFail"
                                 service_name="local_costmap/clear_entirely_local_costmap"/>
+            <Wait wait_duration="1.0"/>
           </Sequence>
         </RecoveryNode>
 
       </PipelineSequence>
 
-      <!-- ===== HARDER RECOVERY ===== -->
-      <Sequence name="ControlledPhysicalRecovery">
+      <RoundRobin name="PhysicalRecovery">
 
-        <!-- Replan lại sau khi chờ/collision -->
-        <ClearEntireCostmap name="ClearLocalCostmap-BeforePhysical"
-                            service_name="local_costmap/clear_entirely_local_costmap"/>
+        <Sequence name="TryShortBackup">
+          <ClearEntireCostmap name="ClearLocal1" service_name="local_costmap/clear_entirely_local_costmap"/>
+          <BackUp backup_dist="0.15" backup_speed="0.08"/>
+          <Wait wait_duration="0.8"/>
+        </Sequence>
 
-        <!-- Lùi rất ngắn -->
-        <BackUp backup_dist="0.12" backup_speed="0.05"/>
+        <Sequence name="TryLongBackup">
+          <ClearEntireCostmap name="ClearLocal2" service_name="local_costmap/clear_entirely_local_costmap"/>
+          <BackUp backup_dist="0.35" backup_speed="0.08"/>
+          <Wait wait_duration="1.0"/>
+        </Sequence>
 
-        <!-- Xoay rất nhỏ, không quay gắt -->
-        <Spin spin_dist="0.2"/>
+        <Sequence name="TryGlobalAndLocalClear">
+          <ClearEntireCostmap name="ClearGlobal2" service_name="global_costmap/clear_entirely_global_costmap"/>
+          <ClearEntireCostmap name="ClearLocal3" service_name="local_costmap/clear_entirely_local_costmap"/>
+          <Wait wait_duration="1.5"/>
+        </Sequence>
 
-        <!-- Chờ thêm một nhịp để môi trường ổn định -->
-        <Wait wait_duration="2.0"/>
+        <Sequence name="TrySpinAsLastResort">
+          <ClearEntireCostmap name="ClearLocal4" service_name="local_costmap/clear_entirely_local_costmap"/>
+          <Spin spin_dist="0.8"/>
+          <Wait wait_duration="1.0"/>
+        </Sequence>
 
-      </Sequence>
+        <Sequence name="TryWait">
+          <Wait wait_duration="1.5"/>
+        </Sequence>
+
+      </RoundRobin>
 
     </RecoveryNode>
 

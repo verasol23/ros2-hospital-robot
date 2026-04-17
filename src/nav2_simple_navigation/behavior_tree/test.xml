@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+
+    <RecoveryNode number_of_retries="6" name="NavigateRecoveryRoot">
+
+      <PipelineSequence name="DynamicNavigation">
+
+        <RateController hz="0.65">
+          <RecoveryNode number_of_retries="1" name="ComputePathRecovery">
+            <Sequence name="ComputeAndSmoothPath">
+              <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+              <SmoothPath unsmoothed_path="{path}" smoothed_path="{smoothed_path}"/>
+            </Sequence>
+
+            <Sequence name="PlanFailRecovery">
+              <ClearEntireCostmap
+                name="ClearGlobalCostmap-OnPlanFail"
+                service_name="global_costmap/clear_entirely_global_costmap"/>
+              <Wait wait_duration="0.8"/>
+            </Sequence>
+          </RecoveryNode>
+        </RateController>
+
+        <RecoveryNode number_of_retries="1" name="FollowPathRecovery">
+          <FollowPath path="{smoothed_path}" controller_id="FollowPath"/>
+
+          <Sequence name="ControllerRecovery">
+            <ClearEntireCostmap
+              name="ClearLocalCostmap-FollowFail"
+              service_name="local_costmap/clear_entirely_local_costmap"/>
+            <DriveOnHeading dist_to_travel="0.10" speed="0.06"/>
+            <Wait wait_duration="0.4"/>
+          </Sequence>
+        </RecoveryNode>
+
+      </PipelineSequence>
+
+      <ReactiveFallback name="RecoveryFallback">
+        
+        <GoalUpdated/>
+
+        <RoundRobin name="PhysicalRecovery">
+
+          <Sequence name="TryClearBothCostmaps">
+            <ClearEntireCostmap
+              name="ClearGlobalCostmap-Recovery"
+              service_name="global_costmap/clear_entirely_global_costmap"/>
+            <ClearEntireCostmap
+              name="ClearLocalCostmap-Recovery"
+              service_name="local_costmap/clear_entirely_local_costmap"/>
+            <Wait wait_duration="0.5"/>
+          </Sequence>
+
+          <Sequence name="TryShortBackup">
+            <ClearEntireCostmap
+              name="ClearLocal1"
+              service_name="local_costmap/clear_entirely_local_costmap"/>
+            <BackUp backup_dist="0.12" backup_speed="0.06"/>
+            <Wait wait_duration="0.5"/>
+          </Sequence>
+
+          <Sequence name="TryLongBackup">
+            <ClearEntireCostmap
+              name="ClearLocal2"
+              service_name="local_costmap/clear_entirely_local_costmap"/>
+            <BackUp backup_dist="0.25" backup_speed="0.06"/>
+            <Wait wait_duration="0.5"/>
+          </Sequence>
+
+          <Sequence name="TrySpinAsLastResort">
+            <ClearEntireCostmap
+              name="ClearLocal4"
+              service_name="local_costmap/clear_entirely_local_costmap"/>
+            <Spin spin_dist="0.55"/>
+            <Wait wait_duration="1.0"/>
+          </Sequence>
+
+          <Sequence name="TryWaitAsLastResort">
+            <Wait wait_duration="1.5"/>
+          </Sequence>
+
+        </RoundRobin>
+      </ReactiveFallback>
+
+    </RecoveryNode>
+
+  </BehaviorTree>
+</root>
