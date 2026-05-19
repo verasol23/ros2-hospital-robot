@@ -2,12 +2,6 @@
 
 A ROS 2 project for simulating a hospital delivery robot in Gazebo. The robot can navigate autonomously with Nav2 and receive room goals from a simple GUI.
 
-## Team Members
-1. Trần Trăng Sáng - 23134050  
-2. Nguyễn Minh Nghĩa - 23134039  
-3. Bùi Đình Khôi - 23134032  
-4. Phạm Trung Kiên - 23134034  
-
 ## Project Overview
 This project simulates a hospital service robot using **ROS 2**, **Gazebo**, and **Nav2**.
 The system supports:
